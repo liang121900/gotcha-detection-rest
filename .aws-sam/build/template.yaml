@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Gotcha-web Sample SAM Template for app
+
+  '
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+    - dev
+    - uat
+    - prd
+    Description: Environment name
+Mappings:
+  MemorySizeMap:
+    dev:
+      MemorySize: 256
+    uat:
+      MemorySize: 256
+    prod:
+      MemorySize: 512
+  DynamoDBMap:
+    dev:
+      tableName: gotcha-object-detection-dev
+  S3Map:
+    dev:
+      inputBucketName: gotcha-detection-input-dev
+      outputBucketName: gotcha-detection-output-dev
+  SqsMap:
+    dev:
+      queueUrl: https://sqs.us-east-1.amazonaws.com/497458231604/gotcha-detection-request-queue-dev
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+  Function:
+    Timeout: 3
+Resources:
+  FastifyApp:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dist/lambda.handler
+      PackageType: Zip
+      Runtime: nodejs18.x
+      MemorySize:
+        Fn::FindInMap:
+        - MemorySizeMap
+        - Ref: Environment
+        - MemorySize
+      Timeout: 30
+      Policies:
+      - SQSSendMessagePolicy:
+          QueueName:
+            Fn::FindInMap:
+            - SqsMap
+            - Ref: Environment
+            - queueUrl
+      - DynamoDBCrudPolicy:
+          TableName:
+            Fn::FindInMap:
+            - DynamoDBMap
+            - Ref: Environment
+            - tableName
+      - S3CrudPolicy:
+          BucketName:
+            Fn::FindInMap:
+            - S3Map
+            - Ref: Environment
+            - inputBucketName
+      - S3CrudPolicy:
+          BucketName:
+            Fn::FindInMap:
+            - S3Map
+            - Ref: Environment
+            - outputBucketName
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:PartiQLSelect
+          - dynamodb:PartiQLInsert
+          Resource:
+            Fn::Sub:
+            - arn:aws:dynamodb:*:*:table/${TableName}
+            - TableName:
+                Fn::FindInMap:
+                - DynamoDBMap
+                - Ref: Environment
+                - tableName
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME:
+            Fn::FindInMap:
+            - DynamoDBMap
+            - Ref: Environment
+            - tableName
+          S3_INPUT_BUCKET_NAME:
+            Fn::FindInMap:
+            - S3Map
+            - Ref: Environment
+            - inputBucketName
+          S3_OUTPUT_BUCKET_NAME:
+            Fn::FindInMap:
+            - S3Map
+            - Ref: Environment
+            - outputBucketName
+          SQS_QUEUE_URL:
+            Fn::FindInMap:
+            - SqsMap
+            - Ref: Environment
+            - queueUrl
+          AWS_SERVICE_ENDPOINT: ''
+      Events:
+        AppEventAPI:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+      CodeUri: FastifyApp
+    Metadata:
+      SamResourceId: FastifyApp
+Outputs:
+  FastifyApp:
+    Description: gotcha-web lambda
+    Value:
+      Fn::GetAtt:
+      - FastifyApp
+      - Arn
+  FastifyAppIamRole:
+    Description: Implicit IAM Role created for FastifyApp function
+    Value:
+      Fn::GetAtt:
+      - FastifyAppRole
+      - Arn

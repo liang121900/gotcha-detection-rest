@@ -1,0 +1,18 @@
+version = 0.1
+[default]
+[default.deploy]
+stack_name = "gotcha-web-dev"
+s3_bucket = "gotcha-artifacts"
+s3_prefix = "gotcha-web-dev"
+region = "US-EAST-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=dev"
+tags = "project=\"gotcha-web\" environment=\"dev\""
+[default.deploy.parameters]
+stack_name = "gotcha-web-dev"
+s3_bucket = "gotcha-artifacts"
+s3_prefix = "gotcha-web-dev"
+region = "US-EAST-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=dev"
+tags = "project=\"gotcha-web\" environment=\"dev\""

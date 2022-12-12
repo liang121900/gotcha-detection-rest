@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Gotcha-web
+  Sample SAM Template for app
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - uat
+      - prd
+    Description: Environment name
+
+Mappings: 
+  MemorySizeMap: 
+    dev: 
+      MemorySize: 256
+    uat: 
+      MemorySize: 256
+    prod: 
+      MemorySize: 512
+  DynamoDBMap:
+    dev:
+      tableName: gotcha-object-detection-dev
+  S3Map:
+    dev:
+      inputBucketName: gotcha-detection-input-dev
+      outputBucketName: gotcha-detection-output-dev
+  SqsMap:
+    dev:
+      queueUrl: https://sqs.us-east-1.amazonaws.com/497458231604/gotcha-detection-request-queue-dev
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+  Function:
+    Timeout: 3
+
+Resources:
+  FastifyApp:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dist/lambda.handler
+      PackageType: Zip
+      Runtime: nodejs18.x
+      MemorySize: !FindInMap [MemorySizeMap, !Ref Environment, MemorySize]
+      Timeout: 30
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !FindInMap [SqsMap, !Ref Environment, queueUrl]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [DynamoDBMap, !Ref Environment, tableName]
+        - S3CrudPolicy:
+            BucketName: !FindInMap [S3Map, !Ref Environment, inputBucketName]
+        - S3CrudPolicy:
+            BucketName: !FindInMap [S3Map, !Ref Environment, outputBucketName]
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PartiQLSelect
+                - dynamodb:PartiQLInsert
+              Resource: !Sub 
+                - 'arn:aws:dynamodb:*:*:table/${TableName}'
+                - TableName: !FindInMap 
+                  - DynamoDBMap
+                  - !Ref Environment
+                  - tableName
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !FindInMap [DynamoDBMap, !Ref Environment, tableName]
+          S3_INPUT_BUCKET_NAME: !FindInMap [S3Map, !Ref Environment, inputBucketName]
+          S3_OUTPUT_BUCKET_NAME: !FindInMap [S3Map, !Ref Environment, outputBucketName]
+          SQS_QUEUE_URL: !FindInMap [SqsMap, !Ref Environment, queueUrl]
+          AWS_SERVICE_ENDPOINT: ""
+      Events:
+        AppEventAPI:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+            #TO DO investigate how to set the binary/mine type to be jpg on template on HttpApi/RestApi, on rest api, it's setting */* on binary media type on console.
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  # AppEventAPI:
+  #   Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+  #   Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  FastifyApp:
+    Description: "gotcha-web lambda"
+    Value: !GetAtt FastifyApp.Arn
+  FastifyAppIamRole:
+    Description: "Implicit IAM Role created for FastifyApp function"
+    Value: !GetAtt FastifyAppRole.Arn
