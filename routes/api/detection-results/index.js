@@ -1,15 +1,15 @@
 'use strict'
 var _ = require('lodash')
 const { Readable } = require('node:stream');
-const { DETECTION_REQUEST_STATUS } = require('../../constants')
-const { getDetectionStatusParamsSchema } = require('../../schema/validation/detection-request-validation-schema')
+const { DETECTION_REQUEST_STATUS } = require('../../../constants')
+const { getDetectionStatusParamsSchema } = require('../../../schema/validation/detection-request-validation-schema')
 
 /**
  * @param {import("fastify").FastifyInstance} fastify 
  * @param {*} opts 
  */
 module.exports = async function (fastify, opts) {
-    fastify.register(require('../../services/detection-request-service'))
+    fastify.register(require('../../../services/detection-request-service'))
 
     fastify.get('/:requestId', {
         schema: { params: getDetectionStatusParamsSchema },

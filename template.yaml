@@ -16,9 +16,9 @@ Parameters:
 Mappings: 
   MemorySizeMap: 
     dev: 
-      MemorySize: 256
+      MemorySize: 512
     uat: 
-      MemorySize: 256
+      MemorySize: 512
     prod: 
       MemorySize: 512
   DynamoDBMap:
@@ -82,7 +82,13 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: any
+        RootAppEventAPI:
+          Type: Api
+          Properties:
+            Path: /
+            Method: any
             #TO DO investigate how to set the binary/mine type to be jpg on template on HttpApi/RestApi, on rest api, it's setting */* on binary media type on console.
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

@@ -2,6 +2,7 @@
 
 const path = require('path')
 const AutoLoad = require('@fastify/autoload')
+const cors = require('@fastify/cors')
 
 /**
  * 
@@ -10,6 +11,22 @@ const AutoLoad = require('@fastify/autoload')
  */
 module.exports = async function (fastify, opts) {
   // Place here your custom code!
+  const DistPath = path.join(__dirname, 'ui', 'build')
+
+  fastify.register(require('@fastify/static'), {
+    root: DistPath
+  })
+
+  fastify.setNotFoundHandler(function (request, reply) {
+    if (!request.url.includes('/api/'))
+      reply.sendFile("index.html");
+    else
+      reply.notFound(`Route ${request.url} not found`)
+  });
+
+  await fastify.register(cors, {
+    origin: ['http://localhost:3000']
+  })
 
 
   // Do not touch the following lines

@@ -1,9 +1,9 @@
 'use strict'
 var _ = require('lodash')
 const fileUpload = require('fastify-file-upload')
-const DetectionRequest = require('../../model/detection-request')
-const { DETECTION_REQUEST_STATUS } = require('../../constants')
-const { postDetectionRequestBodySchema, getDetectionStatusParamsSchema } = require('../../schema/validation/detection-request-validation-schema')
+const DetectionRequest = require('../../../model/detection-request')
+const { DETECTION_REQUEST_STATUS } = require('../../../constants')
+const { postDetectionRequestBodySchema, getDetectionStatusParamsSchema } = require('../../../schema/validation/detection-request-validation-schema')
 
 const MIME_TYPES_ALLOWED = new Set(['image/jpeg'])
 
@@ -28,8 +28,8 @@ module.exports = async function (fastify, opts) {
     },
   })
 
-  fastify.register(require('../../plugins/uuid'))
-  fastify.register(require('../../services/detection-request-service'))
+  fastify.register(require('../../../plugins/uuid'))
+  fastify.register(require('../../../services/detection-request-service'))
   /**
    *  Get request status by id
    */
