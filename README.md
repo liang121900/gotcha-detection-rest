@@ -1,8 +1,14 @@
-# Gotcha-Rest: AWS Serverless API demo in Node and Fasitfy on lambda, calling SQS, S3, Dynamo Service
+# Gotcha-Rest: AWS Serverless App demo in Node, Fasitfy, and React on lambda, calling SQS, S3, Dynamo Service
 
 ## Summary
 
 A serverless rest api demo that mostly use [fastify](https://www.fastify.io/) and [aws-lambda-fastify](https://github.com/fastify/aws-lambda-fastify) on lambda, it provides an endpoint to receive images and return a requestId, then it will send the image to S3, send a messge to sqs queue, and store related status to DynamoDB. The message and image will be picked up and pcossed by [Gotcha-Ai-Worker](https://github.com/liang121900/gotcha-ai-worker) which willupload an output image with object detected on S3, and update the status to PROCESSED on dynamoDB. The user can use another endpoint to get the process status by the requestId and get the result image once the status becomes PROCESSED.
+
+To better demonstrate what this app does, a react front end was added.
+
+It can be accessed on https://gotcha-dev.ga. 
+
+Note the react app is served by the same lambda function for simplicity, but for production or larger amount of traffic, it should be refactored e.g. be hosted on a S3 bucket.
 
 ## General Flow Diagram
 <img src="./doc/gotcha-architecture.png"
