@@ -1,7 +1,7 @@
 const awsLambdaFastify = require('@fastify/aws-lambda')
 const server = require('./server')
 
-const proxy = awsLambdaFastify(server, { binaryMimeTypes: ['application/octet-stream', 'image/jpeg'] })
+const proxy = awsLambdaFastify(server, { binaryMimeTypes: ['application/octet-stream', 'image/jpeg','image/x-icon','image/png'] })
 // or
 // const proxy = awsLambdaFastify(app, { binaryMimeTypes: ['application/octet-stream'], serializeLambdaArguments: false /* default is true */ })
 

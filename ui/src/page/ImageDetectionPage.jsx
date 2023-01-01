@@ -1,16 +1,15 @@
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 import { Box, Button, Container, Typography } from '@mui/material';
-import Stack from '@mui/material/Stack';
-import axios from 'axios';
-import _ from 'lodash';
-import { useState, useCallback, useRef } from 'react';
-import DropZone from '../component/DropZone';
-import { DETECTION_PROCESS_STATUS } from '../Constant'
 import Alert from '@mui/material/Alert';
 import CardMedia from '@mui/material/CardMedia';
 import CircularProgress from '@mui/material/CircularProgress';
-import Layout from '../component/Layout';
+import Stack from '@mui/material/Stack';
+import axios from 'axios';
+import _ from 'lodash';
+import { useCallback, useRef, useState, useEffect } from 'react';
+import DropZone from '../component/DropZone';
+import { DETECTION_PROCESS_STATUS } from '../Constant';
 
 export default function ImageDetectionPage() {
   const [file, setFile] = useState(null);
@@ -64,55 +63,68 @@ export default function ImageDetectionPage() {
         bottomRef.current.scrollIntoView({ alignToTop: false, behavior: 'smooth', block: "end", inline: "end" });
       } catch (e) {
         setProcessStatus(DETECTION_PROCESS_STATUS.ERRORED)
-        console.log("err:" + e)
-        setErrorMessage(e.toString())
+        const msg = e?.response?.data?.message || e.toString();
+        setErrorMessage(msg)
         window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
       }
     }
   }, [file, sendDetectionRequest])
 
+  useEffect(() => {
+    const fetchExampleImage = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL ? 'http://localhost:3000' : ''}/detection-example.jpg`, { responseType: 'blob' });
+        setFile(new File([response.data], "detection-example.jpg", { type: 'image/jpeg', lastModified: Date.now() }));
+      } catch (e) {
+        const msg = e?.response?.data?.message || e.toString();
+        setErrorMessage(msg)
+      }
+    }
+    fetchExampleImage();
+  }, []);
+
   return (
     // <Layout>
-      <Box sx={{ flexGrow: 1, marginTop: "1%" }}>
-        <Typography color="primary" variant='h4' sx={{mb:'0.2em'}}>
-           Object Detection from Image
-        </Typography>
+    <Box sx={{ flexGrow: 1, marginTop: "1%" }}>
+      <Typography color="primary" variant='h4' sx={{ mb: '0.2em' }}>
+        Object Detection from Image
+      </Typography>
 
-        <Stack spacing={2} align="center" justify="center" alignItems="center">
-          {isDetectionProcessFinished && errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-          <Container >
-            <DropZone disabled={processStatus === DETECTION_PROCESS_STATUS.PROCESSING}
-              setFile={setFile}
-              file={file}
-              onDrop={onDrop}
-              preview={true}
-              bodyMessageActive="Drop the image here..."
-              bodyMessageDefault="Drag 'n' drop an image here, or click to select file" />
-          </Container>
+      <Stack spacing={2} align="center" justify="center" alignItems="center">
+        {isDetectionProcessFinished && errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+        <Container >
+          <DropZone disabled={processStatus === DETECTION_PROCESS_STATUS.PROCESSING}
+            setFile={setFile}
+            file={file}
+            onDrop={onDrop}
+            preview={true}
+            bodyMessageActive="Drop the image here..."
+            bodyMessageDefault="Drag 'n' drop an image here, or click to select file" />
+        </Container>
+        <Container>
+          <Button disabled={processStatus === DETECTION_PROCESS_STATUS.PROCESSING || !file}
+            onClick={onDectectButtonClicked}
+            startIcon={<KeyboardDoubleArrowDownIcon />}
+            variant="contained"
+            endIcon={processStatus === DETECTION_PROCESS_STATUS.PROCESSING ? <CircularProgress size="1rem" color="inherit" /> : <ImageSearchIcon />}>
+            {processStatus === DETECTION_PROCESS_STATUS.PROCESSING ? "Processing" : "Detect"}
+          </Button>
+        </Container>
+
+        {processStatus === DETECTION_PROCESS_STATUS.PROCESSED && detectionResultUrl &&
           <Container>
-            <Button disabled={processStatus === DETECTION_PROCESS_STATUS.PROCESSING || !file}
-              onClick={onDectectButtonClicked}
-              startIcon={<KeyboardDoubleArrowDownIcon />}
-              variant="contained"
-              endIcon={processStatus === DETECTION_PROCESS_STATUS.PROCESSING ? <CircularProgress size="1rem" color="inherit" /> : <ImageSearchIcon />}>
-              {processStatus === DETECTION_PROCESS_STATUS.PROCESSING ? "Processing" : "Detect"}
-            </Button>
+            <CardMedia
+              component="img"
+              image={detectionResultUrl}
+              alt={"detection result"}
+              title={""}
+              sx={{ objectFit: "contain" }}
+            />
           </Container>
-
-          {processStatus === DETECTION_PROCESS_STATUS.PROCESSED && detectionResultUrl &&
-            <Container>
-              <CardMedia
-                component="img"
-                image={detectionResultUrl}
-                alt={"detection result"}
-                title={""}
-                sx={{ objectFit: "contain" }}
-              />
-            </Container>
-          }
-          <div ref={bottomRef} />
-        </Stack>
-      </Box>
+        }
+        <div ref={bottomRef} />
+      </Stack>
+    </Box>
     // </Layout>
   );
 }
