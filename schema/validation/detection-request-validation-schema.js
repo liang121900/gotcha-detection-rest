@@ -4,6 +4,11 @@ const postDetectionRequestBodySchema = {
       file: {
         type: 'object',
         required: ['mimetype', 'data', 'name']
+      },
+      confidenceThreshold:{
+        type: 'number',
+        minimum: 0.01,
+        maximum: 0.99
       }
     },
     required: ['file']

@@ -57,14 +57,16 @@ module.exports = async function (fastify, opts) {
   fastify.post('/', {
     schema: { body: postDetectionRequestBodySchema },
     handler: async (request, reply) => {
-      const file = request.body.file
+      const {file, confidenceThreshold = 0.3} = request.body
       if (!isValidMimeType(_.get(file, 'mimetype'))) {
         reply.badRequest(`Invalid mime type, acceptable mime types are [${Array.from(MIME_TYPES_ALLOWED.values())}]`)
       }
 
       // generate uuid
       const requestId = fastify.uuid()
-      const detectionRequest = new DetectionRequest({ requestId: requestId, fileName: file.name })
+      const detectionRequest = new DetectionRequest({ requestId: requestId, fileName: file.name, confidenceThreshold:confidenceThreshold })
+      // request.log.error("detectionRequest generated:")
+      // request.log.error(detectionRequest)
       try {
         // upload file to s3
         const { Key } = await fastify.detectionRequestService.uploadDetectionInput(requestId, file)

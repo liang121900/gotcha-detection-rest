@@ -66,7 +66,7 @@ const popperModifiers=[
 ];
 
 
-export default function DropZone({ file, onDrop, preview, bodyMessageActive, bodyMessageDefault, disabled }) {
+export default function DropZone({ file, resetFile, onDrop, preview, bodyMessageActive, bodyMessageDefault, disabled }) {
   const previewImageRef = useRef(null);
   const [fileDataURL, setFileDataURL] = useState(null);
 
@@ -114,9 +114,10 @@ export default function DropZone({ file, onDrop, preview, bodyMessageActive, bod
 
   }, [file]);
 
-  const onImageResetClick = useCallback((event) => {
-    setFileDataURL(null)
-  }, [])
+  const onFileResetClick = useCallback((event) => {
+    setFileDataURL(null);
+    resetFile();
+  }, [resetFile])
 
   return (
     <Box display="flex" alignItems="center">
@@ -149,7 +150,7 @@ export default function DropZone({ file, onDrop, preview, bodyMessageActive, bod
           placement='top-end'
           modifiers={popperModifiers}
         >
-          <IconButton onClick={onImageResetClick}  >
+          <IconButton onClick={onFileResetClick}  >
             <CloseIcon fontSize="large"/>
           </IconButton>
         </Popper>

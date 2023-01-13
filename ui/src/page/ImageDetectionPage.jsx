@@ -10,17 +10,37 @@ import _ from 'lodash';
 import { useCallback, useRef, useState, useEffect } from 'react';
 import DropZone from '../component/DropZone';
 import { DETECTION_PROCESS_STATUS } from '../Constant';
+import ConfidenceThresholdSlider from '../component/ConfidenceThresholdSlider';
+
+function getProcessButtonValue(processStatus) {
+  switch (processStatus) {
+    case DETECTION_PROCESS_STATUS.PROCESSING: return "Processing"
+    case DETECTION_PROCESS_STATUS.CREATED: return "Queued"
+    default: return "Detect"
+  }
+}
+
+function shouldDisableInput(processStatus) {
+  switch (processStatus) {
+    case DETECTION_PROCESS_STATUS.PROCESSING: return true
+    case DETECTION_PROCESS_STATUS.CREATED: return true
+    default: return false
+  }
+}
 
 export default function ImageDetectionPage() {
   const [file, setFile] = useState(null);
   const [requestId, setRequestId] = useState(null);
   const [processStatus, setProcessStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [confidenceThreshold, setConfidenceThreshold] = useState(30);
   const bottomRef = useRef(null);
 
   const isDetectionProcessFinished = (status) => _.indexOf([DETECTION_PROCESS_STATUS.ERRORED, DETECTION_PROCESS_STATUS.PROCESSED], status) >= 0
 
   const detectionResultUrl = `${process.env.REACT_APP_API_BASE_URL || ''}/api/detection-results/${requestId}`;
+
+  const resetFile = () => setFile(null)
 
   const resetStateBeforeRequest = () => {
     setErrorMessage("");
@@ -30,12 +50,13 @@ export default function ImageDetectionPage() {
   const sendDetectionRequest = useCallback(async (file) => {
     let formData = new FormData();
     formData.append('file', file);
+    formData.append('confidenceThreshold', Number(confidenceThreshold / 100));
     const response = await axios.post('/api/detection-requests', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
     return _.get(response, 'data.requestId')
-  }, [])
+  }, [confidenceThreshold])
 
   const getRequestStatus = async (requestId) => {
-    console.log('>> requestId >> ', requestId);
+    // console.log('>> requestId >> ', requestId);
     const response = await axios.get(`/api/detection-requests/${requestId}`)
     return _.get(response, 'data.status',)
   }
@@ -49,7 +70,7 @@ export default function ImageDetectionPage() {
     if (file) {
       resetStateBeforeRequest()
       try {
-        let status = DETECTION_PROCESS_STATUS.PROCESSING
+        let status = DETECTION_PROCESS_STATUS.CREATED
         setProcessStatus(status)
         const requestId = await sendDetectionRequest(file)
         setRequestId(requestId)
@@ -93,21 +114,24 @@ export default function ImageDetectionPage() {
       <Stack spacing={2} align="center" justify="center" alignItems="center">
         {isDetectionProcessFinished && errorMessage && <Alert severity="error">{errorMessage}</Alert>}
         <Container >
-          <DropZone disabled={processStatus === DETECTION_PROCESS_STATUS.PROCESSING}
-            setFile={setFile}
+          <DropZone disabled={shouldDisableInput(processStatus)}
+            resetFile={resetFile}
             file={file}
             onDrop={onDrop}
             preview={true}
             bodyMessageActive="Drop the image here..."
             bodyMessageDefault="Drag 'n' drop an image here, or click to select file" />
         </Container>
+
+        <ConfidenceThresholdSlider confidenceThreshold={confidenceThreshold} setConfidenceThreshold={setConfidenceThreshold} />
+
         <Container>
-          <Button disabled={processStatus === DETECTION_PROCESS_STATUS.PROCESSING || !file}
+          <Button disabled={shouldDisableInput(processStatus) || !file}
             onClick={onDectectButtonClicked}
             startIcon={<KeyboardDoubleArrowDownIcon />}
             variant="contained"
-            endIcon={processStatus === DETECTION_PROCESS_STATUS.PROCESSING ? <CircularProgress size="1rem" color="inherit" /> : <ImageSearchIcon />}>
-            {processStatus === DETECTION_PROCESS_STATUS.PROCESSING ? "Processing" : "Detect"}
+            endIcon={shouldDisableInput(processStatus) ? <CircularProgress size="1rem" color="inherit" /> : <ImageSearchIcon />}>
+            {getProcessButtonValue(processStatus)}
           </Button>
         </Container>
 

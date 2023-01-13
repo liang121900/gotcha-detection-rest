@@ -58,6 +58,7 @@ To learn Fastify, check out the [Fastify documentation](https://www.fastify.io/d
 
 # AWS SAM:
 ## To Deploy (**TODO**, create a makefile to automate this, set the request throttling on sam template.)
+### If there's only changes on the react app, might need to delete the .aws-sam folder, because sam might not detect the changes.
 1. Build the app by running 
 
 ```sam build --config-file .\samconfig.toml```
@@ -70,3 +71,5 @@ To learn Fastify, check out the [Fastify documentation](https://www.fastify.io/d
 4. Run sam deploy to deploy to aws.
 
 ```sam deploy --config-file samconfig.toml --profile default --region us-east-1```
+
+5. Create a zip file from .aws-sam and upload to lambda page, so that the last-modifed and create date of the file still present. Looks like sam will remove them when packaging.
