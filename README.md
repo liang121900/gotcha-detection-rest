@@ -1,4 +1,4 @@
-# Gotcha-Rest: AWS Serverless App demo in Node, Fasitfy, and React on lambda, calling SQS, S3, Dynamo Service
+# Gotcha-Rest: AWS Serverless App demo in Node, Fasitfy, and React on lambda, using SQS, S3, DynamoDB
 
 ## Summary
 
