@@ -12,6 +12,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import UnderConstructionPage from './page/UnderConstructionPage';
 import Layout from './component/Layout';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ProtectedRoute from './component/route/ProtectedRoute'
+import AuthPage from './page/AuthPage';
 
 const theme = createTheme({
   palette: {
@@ -24,8 +26,17 @@ const theme = createTheme({
     },
     text: {
       primary: 'rgba(0,0,0,0.65)',
-    },
+    }
   },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none"
+        }
+      }
+    }
+  }
 });
 
 const router = createBrowserRouter([
@@ -41,11 +52,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/video-object-detection",
-    element: <Layout><UnderConstructionPage /></Layout>
+    element: <ProtectedRoute><Layout><UnderConstructionPage /></Layout></ProtectedRoute>
   },
   {
     path: "/real-time-object-detection",
-    element: <Layout><UnderConstructionPage /></Layout>
+    element: <ProtectedRoute><Layout><UnderConstructionPage /></Layout></ProtectedRoute>
   },
   {
     path: "/about-me",
@@ -54,6 +65,11 @@ const router = createBrowserRouter([
   {
     path: "/what-is-this",
     element: <Layout><UnderConstructionPage /></Layout>
+  },
+  {
+    path: "/auth",
+    element: <Layout><AuthPage /></Layout>,
+    errorElement: <ErrorPage />,
   },
 ]);
 

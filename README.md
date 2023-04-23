@@ -67,9 +67,10 @@ To learn Fastify, check out the [Fastify documentation](https://www.fastify.io/d
 
 ```npm run build```
 
-3. Copy the generated **ui/build** folder on step #2 to **.aws-sam/build/FastifyApp/ui** generated on step #1
+3. Copy the generated **ui/build** folder on step #2 to **.aws-sam/build/FastifyApp/ui/build** generated on step #1, then delete all files and folders except the **build** folder
 4. Run sam deploy to deploy to aws.
 
 ```sam deploy --config-file samconfig.toml --profile default --region us-east-1```
 
 5. Create a zip file from .aws-sam and upload to lambda page, so that the last-modifed and create date of the file still present. Looks like sam will remove them when packaging.
+6. On aws console -> api gateway, check if settings -> Binary Media Types have been reset, if so, add */* and multipart/form-data, TODO: add this setting to the SAM template.

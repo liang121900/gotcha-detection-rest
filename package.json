@@ -38,6 +38,7 @@
     "fastify-file-upload": "^4.0.0",
     "fastify-plugin": "^4.0.0",
     "lodash": "^4.17.21",
+    "redux-persist": "^6.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

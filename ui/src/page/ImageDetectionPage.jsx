@@ -1,16 +1,19 @@
 import ImageSearchIcon from '@mui/icons-material/ImageSearch';
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
-import { Box, Button, Container, Typography } from '@mui/material';
+import {Box, Button, Container, Typography} from '@mui/material';
 import Alert from '@mui/material/Alert';
 import CardMedia from '@mui/material/CardMedia';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import axios from 'axios';
 import _ from 'lodash';
-import { useCallback, useRef, useState, useEffect } from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import DropZone from '../component/DropZone';
-import { DETECTION_PROCESS_STATUS } from '../Constant';
+import {DETECTION_PROCESS_STATUS} from '../Constant';
 import ConfidenceThresholdSlider from '../component/ConfidenceThresholdSlider';
+import useLogin from "../hook/useLogin"
+import {useSelector} from "react-redux";
+import { Buffer } from 'buffer';
 
 function getProcessButtonValue(processStatus) {
   switch (processStatus) {
@@ -29,16 +32,18 @@ function shouldDisableInput(processStatus) {
 }
 
 export default function ImageDetectionPage() {
+  const {redirectToLogin, LoginLink} = useLogin()
+  const user = useSelector((state) => state.user);
+
   const [file, setFile] = useState(null);
   const [requestId, setRequestId] = useState(null);
   const [processStatus, setProcessStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [confidenceThreshold, setConfidenceThreshold] = useState(30);
+  const [detectionResult, setDetctionResult] = useState(null);
   const bottomRef = useRef(null);
 
   const isDetectionProcessFinished = (status) => _.indexOf([DETECTION_PROCESS_STATUS.ERRORED, DETECTION_PROCESS_STATUS.PROCESSED], status) >= 0
-
-  const detectionResultUrl = `${process.env.REACT_APP_API_BASE_URL || ''}/api/detection-results/${requestId}`;
 
   const resetFile = () => setFile(null)
 
@@ -51,15 +56,24 @@ export default function ImageDetectionPage() {
     let formData = new FormData();
     formData.append('file', file);
     formData.append('confidenceThreshold', Number(confidenceThreshold / 100));
-    const response = await axios.post('/api/detection-requests', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    const response = await axios.post('/api/detection-requests', formData, { headers: { 'Content-Type': 'multipart/form-data', 'Authorization': user?.auth?.idToken } })
     return _.get(response, 'data.requestId')
   }, [confidenceThreshold])
 
   const getRequestStatus = async (requestId) => {
     // console.log('>> requestId >> ', requestId);
-    const response = await axios.get(`/api/detection-requests/${requestId}`)
+    const response = await axios.get(`/api/detection-requests/${requestId}`, { headers: { 'Authorization': user?.auth?.idToken } })
     return _.get(response, 'data.status',)
   }
+
+  const getDetectionResult = async (requestId) => {
+    const detectionResultUrl = `${process.env.REACT_APP_API_BASE_URL || ''}/api/detection-results/${requestId}`;
+    const response = await axios.get(detectionResultUrl, {
+      responseType: "arraybuffer",
+      headers: { 'Authorization': user?.auth?.idToken }
+    })
+    setDetctionResult(Buffer.from(response?.data, "binary").toString("base64"))
+  }  
 
   const onDrop = useCallback((acceptedFiles) => {
     setFile(_.get(acceptedFiles, '[0]'))
@@ -79,17 +93,22 @@ export default function ImageDetectionPage() {
           await new Promise(resolve => setTimeout(resolve, i * 1000));
           status = await getRequestStatus(requestId);
           setProcessStatus(status)
-          i = Math.pow(2, i)
+          i = Math.pow(1.25, i)
         }
+        getDetectionResult(requestId)
         bottomRef.current.scrollIntoView({ alignToTop: false, behavior: 'smooth', block: "end", inline: "end" });
       } catch (e) {
+          if (e?.response?.status === 401) {
+              await redirectToLogin()
+          }
+
         setProcessStatus(DETECTION_PROCESS_STATUS.ERRORED)
         const msg = e?.response?.data?.message || e.toString();
         setErrorMessage(msg)
         window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
       }
     }
-  }, [file, sendDetectionRequest])
+  }, [file, sendDetectionRequest, redirectToLogin])
 
   useEffect(() => {
     const fetchExampleImage = async () => {
@@ -135,11 +154,11 @@ export default function ImageDetectionPage() {
           </Button>
         </Container>
 
-        {processStatus === DETECTION_PROCESS_STATUS.PROCESSED && detectionResultUrl &&
+        {processStatus === DETECTION_PROCESS_STATUS.PROCESSED && detectionResult &&
           <Container>
             <CardMedia
               component="img"
-              image={detectionResultUrl}
+              image={`data:;base64,${detectionResult}`}
               alt={"detection result"}
               title={""}
               sx={{ objectFit: "contain" }}

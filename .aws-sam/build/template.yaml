@@ -14,9 +14,9 @@ Parameters:
 Mappings:
   MemorySizeMap:
     dev:
-      MemorySize: 256
+      MemorySize: 512
     uat:
-      MemorySize: 256
+      MemorySize: 512
     prod:
       MemorySize: 512
   DynamoDBMap:
@@ -29,12 +29,27 @@ Mappings:
   SqsMap:
     dev:
       queueUrl: https://sqs.us-east-1.amazonaws.com/497458231604/gotcha-detection-request-queue-dev
+  CognitoUserPoolMap:
+    dev:
+      arn: arn:aws:cognito-idp:us-east-1:497458231604:userpool/us-east-1_sKeK25Hk6
 Globals:
   Api:
     EndpointConfiguration: REGIONAL
   Function:
     Timeout: 3
 Resources:
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        Authorizers:
+          AuthorizersCognitoUserPools:
+            UserPoolArn:
+              Fn::FindInMap:
+              - CognitoUserPoolMap
+              - Ref: Environment
+              - arn
   FastifyApp:
     Type: AWS::Serverless::Function
     Properties:
@@ -115,6 +130,24 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: any
+            RestApiId:
+              Ref: RestApi
+        RootAppEventAPI:
+          Type: Api
+          Properties:
+            Path: /
+            Method: any
+            RestApiId:
+              Ref: RestApi
+        AppPrivateEventAPI:
+          Type: Api
+          Properties:
+            Path: /api/{proxy+}
+            Method: any
+            RestApiId:
+              Ref: RestApi
+            Auth:
+              Authorizer: AuthorizersCognitoUserPools
       CodeUri: FastifyApp
     Metadata:
       SamResourceId: FastifyApp

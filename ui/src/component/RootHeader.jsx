@@ -11,6 +11,7 @@ import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import SwipeableDrawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -19,14 +20,17 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import * as React from 'react';
+import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
-import Link from '@mui/material/Link';
-import Button from '@mui/material/Button';
+import useLogin from "../hook/useLogin";
 
 import { ReactComponent as LogoSvg } from '../logo.svg';
+import UserMenu from './UserMenu';
 
 export default function RootHeader() {
   const [anchorElNav, setAnchorElNav] = React.useState(false);
+  const isAuthenticated = useSelector((state) => state?.user?.isAuthenticated)
+  const {LoginLink} = useLogin()
 
   const drawerWidth = 240;
 
@@ -84,9 +88,11 @@ export default function RootHeader() {
               DEV
             </Typography>
             <Box>
-              <Button
-                color="inherit">Login
-              </Button>
+                {!isAuthenticated ?
+                  <LoginLink/>
+                  :
+                  <UserMenu />
+                }
             </Box>
           </Toolbar>
         </Container>

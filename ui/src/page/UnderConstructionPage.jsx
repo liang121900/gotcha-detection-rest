@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 
 export default function UnderConstructionPage() {
     return (
-        <Stack id="error-page"z width="100%">
+        <Stack id="error-page" width="100%">
             <Typography color="primary" sx={{ mt: '0.2em' }} variant="h3" component="h4">Under Construction</Typography>
             <Typography sx={{ mt: '1em' }} variant="body1" gutterBottom>
                 Sorry, this page is still under construction.

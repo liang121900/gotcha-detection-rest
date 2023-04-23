@@ -31,6 +31,9 @@ Mappings:
   SqsMap:
     dev:
       queueUrl: https://sqs.us-east-1.amazonaws.com/497458231604/gotcha-detection-request-queue-dev
+  CognitoUserPoolMap:
+    dev:
+      arn: arn:aws:cognito-idp:us-east-1:497458231604:userpool/us-east-1_sKeK25Hk6
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -40,6 +43,22 @@ Globals:
     Timeout: 3
 
 Resources:
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        Authorizers:
+          AuthorizersCognitoUserPools:
+              UserPoolArn: !FindInMap [CognitoUserPoolMap, !Ref Environment, arn]      
+      # DefinitionBody:
+      #   schemes:
+      #     - https
+      #   swagger: "2.0"      
+      #   x-amazon-apigateway-binary-media-types:
+      #     - "multipart/form-data"
+      #     - "*/*"
+
   FastifyApp:
     Type: AWS::Serverless::Function
     Properties:
@@ -82,12 +101,23 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: any
+            RestApiId: !Ref RestApi
         RootAppEventAPI:
           Type: Api
           Properties:
             Path: /
             Method: any
+            RestApiId: !Ref RestApi  
             #TO DO investigate how to set the binary/mine type to be jpg on template on HttpApi/RestApi, on rest api, it's setting */* on binary media type on console.
+        AppPrivateEventAPI:
+          Type: Api
+          Properties:
+            Path: /api/{proxy+}
+            Method: any
+            RestApiId: !Ref RestApi
+            Auth:
+              Authorizer: AuthorizersCognitoUserPools # OPTIONAL
+
 
 
 Outputs:
