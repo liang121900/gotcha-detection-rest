@@ -33,7 +33,7 @@ function shouldDisableInput(processStatus) {
 
 export default function ImageDetectionPage() {
   const {redirectToLogin, LoginLink} = useLogin()
-  const user = useSelector((state) => state.user);
+  const authToken = useSelector((state) => state?.user?.auth?.idToken);
 
   const [file, setFile] = useState(null);
   const [requestId, setRequestId] = useState(null);
@@ -56,24 +56,24 @@ export default function ImageDetectionPage() {
     let formData = new FormData();
     formData.append('file', file);
     formData.append('confidenceThreshold', Number(confidenceThreshold / 100));
-    const response = await axios.post('/api/detection-requests', formData, { headers: { 'Content-Type': 'multipart/form-data', 'Authorization': user?.auth?.idToken } })
+    const response = await axios.post('/api/detection-requests', formData, { headers: { 'Content-Type': 'multipart/form-data', 'Authorization': authToken } })
     return _.get(response, 'data.requestId')
-  }, [confidenceThreshold])
+  }, [confidenceThreshold, authToken])
 
-  const getRequestStatus = async (requestId) => {
+  const getRequestStatus = useCallback(async (requestId) => {
     // console.log('>> requestId >> ', requestId);
-    const response = await axios.get(`/api/detection-requests/${requestId}`, { headers: { 'Authorization': user?.auth?.idToken } })
+    const response = await axios.get(`/api/detection-requests/${requestId}`, { headers: { 'Authorization': authToken } })
     return _.get(response, 'data.status',)
-  }
+  }, [authToken])
 
-  const getDetectionResult = async (requestId) => {
+  const getDetectionResult = useCallback(async (requestId) => {
     const detectionResultUrl = `${process.env.REACT_APP_API_BASE_URL || ''}/api/detection-results/${requestId}`;
     const response = await axios.get(detectionResultUrl, {
       responseType: "arraybuffer",
-      headers: { 'Authorization': user?.auth?.idToken }
+      headers: { 'Authorization': authToken }
     })
     setDetctionResult(Buffer.from(response?.data, "binary").toString("base64"))
-  }  
+  },[authToken])
 
   const onDrop = useCallback((acceptedFiles) => {
     setFile(_.get(acceptedFiles, '[0]'))

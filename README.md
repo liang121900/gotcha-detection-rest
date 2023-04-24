@@ -74,3 +74,11 @@ To learn Fastify, check out the [Fastify documentation](https://www.fastify.io/d
 
 5. Create a zip file from .aws-sam and upload to lambda page, so that the last-modifed and create date of the file still present. Looks like sam will remove them when packaging.
 6. On aws console -> api gateway, check if settings -> Binary Media Types have been reset, if so, add */* and multipart/form-data, TODO: add this setting to the SAM template.
+
+```Deploy the react app to s3```
+1. Build the app on the ui folder
+2. go to ui\build and run the command to upload the files, aws s3 sync . s3://gotcha-static-web-dev
+
+```Cloud Front setup```
+1. Create a cloud front distribution and add the 2 origins: S3 and Api gateway created above (for the api gateway origin, add "/Prod" on the origin path)
+2. Create two behaviors on the distribution for path patterns with /api/*, route that to the api gateway origin, and default route to the S3 orign.
