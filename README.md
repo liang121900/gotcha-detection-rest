@@ -12,7 +12,12 @@ Note the react app is served by the same lambda function for simplicity, but for
 
 ## General Flow Diagram
 <img src="./doc/gotcha-architecture.png"
-alt="Schema 1"
+alt="architecture"
+style="float: left; margin-right: 10px;" />
+
+## Core functionality Demo
+<img src="./doc/core-functionality-demo.gif"
+alt="demo gif"
 style="float: left; margin-right: 10px;" />
 
 ## Postman Collection
