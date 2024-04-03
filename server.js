@@ -33,7 +33,7 @@ app.addHook('onClose', async (instance, done) => {
 
 if (require.main === module) {
   // Start listening.
-  app.listen({ port: process.env.PORT || 3000 }, (err) => {
+  app.listen({ host: ADDRESS, port: process.env.PORT || 3000 }, (err) => {
     if (err) {
       app.log.error(err)
       process.exit(1)

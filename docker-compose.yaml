@@ -1,0 +1,7 @@
+services:
+  gotcha-front:
+    container_name: gotcha-detection-front
+    build: .
+    image: gotcha-detection-front:${APP_VERSION}
+    ports:
+      - "3001:3001"

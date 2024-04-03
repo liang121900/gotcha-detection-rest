@@ -1,8 +1,8 @@
 import Link from '@mui/material/Link';
-import {useDispatch} from "react-redux";
-import {v1 as uuidv1} from 'uuid';
-import {resetUser, setAuthState as setGlobalAuthState} from "../redux/Slice/slice";
-import {useMemo, useCallback} from "react";
+import { useDispatch } from "react-redux";
+import { v1 as uuidv1 } from 'uuid';
+import { resetUser, setAuthState as setGlobalAuthState } from "../redux/Slice/slice";
+import { useMemo, useCallback } from "react";
 
 /*
 A link like button for login.
@@ -19,13 +19,13 @@ export default function useLogin() {
         dispatch(resetUser());
         await dispatch(setGlobalAuthState(authState))
         window.location.href = loginLink
-    },[dispatch])
+    }, [dispatch])
 
     const LoginLink = useMemo(() => {
         return () => (
             <Link color="inherit"
-                  component="button"
-                  onClick={redirectToLogin}>
+                component="button"
+                onClick={redirectToLogin}>
                 Login
             </Link>
         )
@@ -35,5 +35,5 @@ export default function useLogin() {
     }, [redirectToLogin])
 
 
-    return {redirectToLogin, LoginLink}
+    return { redirectToLogin, LoginLink }
 }
