@@ -28,8 +28,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start_bk": "cross-env REACT_APP_API_BASE_URL=\"http://localhost:3001\"  react-scripts start",
-    "start": "cross-env react-scripts start",
+    "start": "cross-env REACT_APP_API_BASE_URL=\"http://localhost:3001\"  react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

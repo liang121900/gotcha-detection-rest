@@ -13,7 +13,7 @@ import '@fontsource/roboto/700.css';
 
 console.log(`api base url: ${process.env.REACT_APP_API_BASE_URL}`)
 
-//axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL -- don't need to set base domain in ECS case
+axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
