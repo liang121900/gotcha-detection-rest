@@ -4,4 +4,7 @@ services:
     build: .
     image: gotcha-detection-front:${APP_VERSION}
     ports:
-      - "3001:3001"
+      - "80:80"
+    environment:
+      - PORT=80
+      - FASTIFY_ADDRESS=0.0.0.0

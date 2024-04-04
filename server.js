@@ -33,13 +33,13 @@ app.addHook('onClose', async (instance, done) => {
 
 if (require.main === module) {
   // Start listening.
-  app.listen({ host: ADDRESS, port: process.env.PORT || 3000 }, (err) => {
+  app.listen({ port: process.env.PORT || 3000 }, (err) => {
     if (err) {
       app.log.error(err)
       process.exit(1)
     }
   })
-}else{
+} else {
   /*
   Required as a module => executed on aws lambda
   When executed in your lambda function we don't need 
