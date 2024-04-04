@@ -1,0 +1,10 @@
+services:
+  gotcha-front:
+    container_name: gotcha-detection-front
+    build: .
+    image: gotcha-detection-front:${APP_VERSION}
+    ports:
+      - "80:80"
+    environment:
+      - PORT=80
+      - FASTIFY_ADDRESS=0.0.0.0

@@ -1,4 +1,4 @@
-# Gotcha-Rest: AWS Serverless App demo in Node, Fasitfy, and React on lambda, using SQS, S3, DynamoDB
+# Gotcha-Rest: AWS Serverless App demo in Node, Fasitfy, and React on both Lambda and ECS, using SQS, S3, DynamoDB
 
 ## Summary
 
@@ -83,6 +83,40 @@ To learn Fastify, check out the [Fastify documentation](https://www.fastify.io/d
 ```Deploy the react app to s3```
 1. Build the app on the ui folder
 2. go to ui\build and run the command to upload the files, aws s3 sync . s3://gotcha-static-web-dev
+
+```Deploy the web app to ECS```
+1. build the docker image and push to ecr/dockerhub `run docker-compose buid gotcha-front` (change APP_VERSION on .env if needed)
+2. create ecs task and service, with following environment variable
+
+        {
+            "name": "S3_INPUT_BUCKET_NAME",
+            "value": "gotcha-detection-input-dev"
+        },
+        {
+            "name": "SQS_QUEUE_URL",
+            "value": "[sqs quque url]"
+        },
+        {
+            "name": "PORT",
+            "value": "80"
+        },
+        {
+            "name": "S3_OUTPUT_BUCKET_NAME",
+            "value": "[s3 bucket name]"
+        },
+        {
+            "name": "ADDRESS",
+            "value": "0.0.0.0"
+        },
+        {
+            "name": "DYNAMODB_TABLE_NAME",
+            "value": "gotcha-object-detection-dev"
+        },
+        {
+            "name": "FASTIFY_ADDRESS",
+            "value": "0.0.0.0"
+        }
+
 
 ```Cloud Front setup```
 1. Create a cloud front distribution and add the 2 origins: S3 and Api gateway created above (for the api gateway origin, add "/Prod" on the origin path)

@@ -39,7 +39,7 @@ if (require.main === module) {
       process.exit(1)
     }
   })
-}else{
+} else {
   /*
   Required as a module => executed on aws lambda
   When executed in your lambda function we don't need 
